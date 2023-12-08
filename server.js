@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const authRouter= require("./routes/authRoute")
 
 dotenv.config();
 const app = express();
@@ -17,6 +18,9 @@ mongoose
   .catch((error) => {
     console.log(error.message);
   });
+
+app.use("auth/",authRouter)
+
 
 app.listen(port, () => {
   console.log(`Server is listening to port ${port}`);
