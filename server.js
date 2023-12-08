@@ -8,10 +8,11 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-port = process.env.mongo_url;
+mongouri = process.env.MONGO_URI;
+port= process.env.PORT
 
 mongoose
-  .connect(port)
+  .connect(mongouri)
   .then(() => {
     console.log("DB is connceted");
   })
@@ -19,9 +20,12 @@ mongoose
     console.log(error.message);
   });
 
-app.use("auth/",authRouter)
+app.use("/auth",authRouter);
+
+
 
 
 app.listen(port, () => {
   console.log(`Server is listening to port ${port}`);
 });
+

@@ -19,7 +19,10 @@ const signupUser = async (req, res) => {
       const newUser = new User({
         username: username,
         email: email,
-        password: CryptoJS.AES.encrypt(password, CRYPTO_SECRET).toString(),
+        password: CryptoJS.AES.encrypt(
+          password,
+          process.env.CRYPTO_SECRET
+        ).toString(),
         firstName: firstName,
         lastName: lastName,
         address: { street, city, postalCode },
@@ -36,6 +39,8 @@ const signupUser = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log("ekhanei mair khaise");
+
     res.status(404).json({
       status: false,
       message: error.message,
@@ -52,15 +57,14 @@ const signinUser = async (req, res) => {
     if (user) {
       const decryptedPass = CryptoJS.AES.decrypt(
         user.password,
-        CRYPTO_SECRET
-      ).bytes.toString(CryptoJS.enc.Utf8);
+        process.env.CRYPTO_SECRET
+      ).toString(CryptoJS.enc.Utf8);
       if (password === decryptedPass) {
-        JWT_SECRET;
         jwt.sign(
           {
             user,
           },
-          JWT_SECRET,
+          process.env.JWT_SECRET,
           { expiresIn: "1h" }
         );
         res.status(200).json({
@@ -70,13 +74,13 @@ const signinUser = async (req, res) => {
       } else {
         res.status(400).json({
           status: false,
-          message: "Wrong credential",
+          message: "Wrong password",
         });
       }
     } else {
       res.status(404).json({
         status: false,
-        message: "User doesn't exist",
+        message: "Wrong credential",
       });
     }
   } catch (error) {
