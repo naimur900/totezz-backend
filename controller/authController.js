@@ -1,0 +1,90 @@
+const jwt = require("jsonwebtoken");
+const CryptoJS = require("crypto-js");
+const User = require("../model/User");
+
+const signupUser = async (req, res) => {
+  const {
+    username,
+    email,
+    password,
+    firstName,
+    lastName,
+    address: { street, city, postalCode },
+  } = req.body;
+  try {
+    const user = await User.findOne({
+      email: email,
+    });
+    if (!user) {
+      const newUser = new User({
+        username: username,
+        email: email,
+        password: CryptoJS.AES.encrypt(password, CRYPTO_SECRET).toString(),
+        firstName: firstName,
+        lastName: lastName,
+        address: { street, city, postalCode },
+      });
+      await newUser.save();
+      res.status(404).json({
+        status: true,
+        message: "User created successfully",
+      });
+    } else {
+      res.status(404).json({
+        status: false,
+        message: "User already exist",
+      });
+    }
+  } catch (error) {
+    res.status(404).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+const signinUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({
+      email: email,
+    });
+    if (user) {
+      const decryptedPass = CryptoJS.AES.decrypt(
+        user.password,
+        CRYPTO_SECRET
+      ).bytes.toString(CryptoJS.enc.Utf8);
+      if (password === decryptedPass) {
+        JWT_SECRET;
+        jwt.sign(
+          {
+            user,
+          },
+          JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+        res.status(200).json({
+          status: true,
+          message: "User signed in",
+        });
+      } else {
+        res.status(400).json({
+          status: false,
+          message: "Wrong credential",
+        });
+      }
+    } else {
+      res.status(404).json({
+        status: false,
+        message: "User doesn't exist",
+      });
+    }
+  } catch (error) {
+    res.status(404).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { signupUser, signinUser };
