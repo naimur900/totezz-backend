@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const authRouter= require("./routes/authRoute");
 const productRouter = require("./routes/productRoute");
+const userRouter = require("./routes/userRoute");
 
 dotenv.config();
 const app = express();
@@ -23,7 +24,7 @@ mongoose
 
 app.use("/auth",authRouter);
 app.use("/product",productRouter);
-app.use("/user",authRouter);
+app.use("/user",userRouter);
 
 
 
