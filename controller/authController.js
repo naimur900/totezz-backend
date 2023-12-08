@@ -60,7 +60,7 @@ const signinUser = async (req, res) => {
         process.env.CRYPTO_SECRET
       ).toString(CryptoJS.enc.Utf8);
       if (password === decryptedPass) {
-        jwt.sign(
+        const token = jwt.sign(
           {
             user,
           },
@@ -70,6 +70,7 @@ const signinUser = async (req, res) => {
         res.status(200).json({
           status: true,
           message: "User signed in",
+          token: token,
         });
       } else {
         res.status(400).json({
