@@ -65,7 +65,7 @@ const signinUser = async (req, res) => {
             user,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "2h" }
         );
         res.status(200).json({
           status: true,
