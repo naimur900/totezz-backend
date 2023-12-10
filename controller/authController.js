@@ -39,8 +39,6 @@ const signupUser = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log("ekhanei mair khaise");
-
     res.status(404).json({
       status: false,
       message: error.message,
@@ -60,13 +58,9 @@ const signinUser = async (req, res) => {
         process.env.CRYPTO_SECRET
       ).toString(CryptoJS.enc.Utf8);
       if (password === decryptedPass) {
-        const token = jwt.sign(
-          {
-            user,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "2h" }
-        );
+        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+          expiresIn: "2h",
+        });
         res.status(200).json({
           status: true,
           message: "User signed in",

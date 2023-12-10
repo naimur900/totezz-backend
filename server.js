@@ -6,6 +6,7 @@ const authRouter= require("./routes/authRoute");
 const productRouter = require("./routes/productRoute");
 const userRouter = require("./routes/userRoute");
 const wishListRouter = require("./routes/wishListRoute");
+const reviewRouter = require("./routes/reviewRoute");
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.use("/auth",authRouter);
 app.use("/product",productRouter);
 app.use("/user",userRouter);
 app.use("/wishlist",wishListRouter)
+app.use("/review",reviewRouter)
 
 
 

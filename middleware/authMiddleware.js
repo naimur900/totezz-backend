@@ -2,11 +2,10 @@ const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  // console.log(authHeader);
+
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-    // const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    // console.log(decodedToken);
+
     jwt.verify(token, process.env.JWT_SECRET, function (error, user) {
       if (error) {
         res.status(403).json({
@@ -14,11 +13,8 @@ const verifyToken = (req, res, next) => {
           message: error.message,
         });
       } else {
-        // res.status(200).json({
-        //   status: true,
-        //   user: user,
-        // });
         req.user = user;
+        req.token = token
         next();
       }
     });
