@@ -5,7 +5,7 @@ const Product = require("../model/Product");
 const addToWishList = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken._id;
+    const userId = decryptedToken.user._id;
     const { productId } = req.body;
     const product = await Product.findById(productId);
     if (!product) {
@@ -41,7 +41,7 @@ const addToWishList = async (req, res) => {
 const getWishListById = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken._id;
+    const userId = decryptedToken.user._id;
     const wishList = await WishList.findOne({ userId: userId }).populate(
       "productIds"
     );
@@ -67,7 +67,7 @@ const removeFromWishList = async (req, res) => {
   try {
     const { productId } = req.body;
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken._id;
+    const userId = decryptedToken.user._id;
     const wishList = await WishList.findOne({ userId: userId });
     if (!wishList) {
       res.status(404).json({ message: "No such wishlist is found" });

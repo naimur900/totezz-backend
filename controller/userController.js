@@ -1,10 +1,11 @@
 const User = require("../model/User");
+const decryptToken = require("../helper/helper");
 
 const getUser = async (req, res) => {
   try {
     const users = await User.find();
     if (!users) {
-      res.status(404).json({ status: false, message: "There is no User" });
+      res.status(404).json({ status: false, message: "User is not found" });
     } else {
       res.status(200).json(Users);
     }
@@ -14,10 +15,10 @@ const getUser = async (req, res) => {
 };
 
 const getUserById = async (req, res) => {
-  const userId = req.params.userId;
   try {
+    const decryptedToken = decryptToken(req.token);
+    const userId = decryptedToken.user._id;
     const user = await User.findById(userId);
-    // Need to fix error showcasing
     if (!user) {
       res.status(404).json({ status: false, message: "User is not found" });
     } else {
@@ -29,20 +30,17 @@ const getUserById = async (req, res) => {
 };
 
 const updateUserById = async (req, res) => {
-  const userId = req.params.userId;
-  // console.log(UserId);
-  const updatedProperties = req.body;
-  // console.log(updatedProperties);
   try {
-    const user = await user.findById(userId);
-    // console.log(User);
+    const decryptedToken = decryptToken(req.token);
+    const userId = decryptedToken.user._id;
+    const updatedProperties = { ...req.body, password: undefined };
+    const user = await User.findById(userId);
     if (!user) {
       res.status(404).json({
         status: flase,
-        message: "No such User is found",
+        message: "User is not found",
       });
     } else {
-      // Password hash kora lagbe change korte hoile
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { $set: updatedProperties },
@@ -51,8 +49,7 @@ const updateUserById = async (req, res) => {
           runValidators: true,
         }
       );
-
-      res.status(200).json({
+      res.status(201).json({
         status: true,
         message: "User updated successfully",
         updatedUser: updatedUser,
@@ -67,24 +64,25 @@ const updateUserById = async (req, res) => {
 };
 
 const deleteUserById = async (req, res) => {
-  const userId = req.params.userId;
-  //   console.log(userId);
   try {
+    // const decryptedToken = decryptToken(req.token);
+    // const userId = decryptedToken.user._id;
+    const {userId} = req.body;
     const user = await User.findById(userId);
     if (!user) {
       res.status(404).json({
-        status: flase,
-        message: "User not found",
+        status: false,
+        message: "User is not found",
       });
     } else {
       await User.findByIdAndDelete(userId);
       res.status(200).json({
         status: true,
-        message: "User deleted successfully",
+        message: "User is deleted successfully",
       });
     }
   } catch (error) {
-    res.status(300).json({
+    res.status(500).json({
       status: false,
       message: error.message,
     });

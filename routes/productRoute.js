@@ -8,8 +8,8 @@ const {
 } = require("../controller/productController");
 const { verifyAll, verifyAdmin } = require("../middleware/authMiddleware");
 
-productRouter.get("/getAll", getProduct);
-productRouter.get("/getOne", getProductById);
+productRouter.get("/getall", getProduct);
+productRouter.get("/getone", getProductById);
 productRouter.post("/add", verifyAll, addProduct);
 productRouter.put("/update", verifyAll, updateProductById);
 productRouter.delete("/delete", verifyAll, deleteProductById);

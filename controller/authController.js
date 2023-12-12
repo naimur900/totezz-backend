@@ -4,12 +4,11 @@ const User = require("../model/User");
 
 const signupUser = async (req, res) => {
   const {
-    username,
     email,
     password,
     firstName,
     lastName,
-    address: { street, city, postalCode },
+    contactNumber,
   } = req.body;
   try {
     const user = await User.findOne({
@@ -17,7 +16,6 @@ const signupUser = async (req, res) => {
     });
     if (!user) {
       const newUser = new User({
-        username: username,
         email: email,
         password: CryptoJS.AES.encrypt(
           password,
@@ -25,21 +23,21 @@ const signupUser = async (req, res) => {
         ).toString(),
         firstName: firstName,
         lastName: lastName,
-        address: { street, city, postalCode },
+        contactNumber: contactNumber,
       });
       await newUser.save();
-      res.status(404).json({
+      res.status(201).json({
         status: true,
         message: "User created successfully",
       });
     } else {
-      res.status(404).json({
+      res.status(409).json({
         status: false,
         message: "User already exist",
       });
     }
   } catch (error) {
-    res.status(404).json({
+    res.status(500).json({
       status: false,
       message: error.message,
     });
@@ -67,19 +65,19 @@ const signinUser = async (req, res) => {
           token: token,
         });
       } else {
-        res.status(400).json({
+        res.status(401).json({
           status: false,
           message: "Wrong password",
         });
       }
     } else {
-      res.status(404).json({
+      res.status(401).json({
         status: false,
         message: "Wrong credential",
       });
     }
   } catch (error) {
-    res.status(404).json({
+    res.status(500).json({
       status: false,
       message: error.message,
     });

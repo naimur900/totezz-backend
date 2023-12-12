@@ -7,9 +7,9 @@ const {
 } = require("../controller/userController");
 const { verifyAll, verifyAdmin } = require("../middleware/authMiddleware");
 
-userRouter.get("/all", verifyAll, getUser);
-userRouter.get("/:userId", verifyAll, getUserById);
-userRouter.put("/:userId", verifyAll, updateUserById);
-userRouter.delete("/:userId", verifyAll, deleteUserById);
+userRouter.get("/getall", verifyAll, getUser);
+userRouter.get("/getone", verifyAll, getUserById);
+userRouter.put("/update", verifyAll, updateUserById);
+userRouter.delete("/delete", verifyAll, deleteUserById);
 
 module.exports = userRouter;

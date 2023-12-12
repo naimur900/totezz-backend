@@ -5,26 +5,14 @@ const decryptToken = require("../helper/helper");
 const addReview = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken._id;
+    const userId = decryptedToken.user._id;
     const { productId, rating, content } = req.body;
     const product = await Product.findById(productId);
     if (!product) {
-      res
-        .status(404)
-        .json({ message: "No such product found to give a review on" });
+      res.status(404).json({ message: "No such product is found" });
     } else {
       const review = await Review.findOne({ productId: productId });
-      if (review) {
-        review.userId.push(userId);
-        review.content.push(content);
-        review.rating.push(rating);
-        review.createdAt.push(Date.now);
-        await review.save();
-        res.status(200).json({
-          status: true,
-          message: "Review added successfully",
-        });
-      } else {
+      if (!review) {
         const newReview = new Review({
           userId: userId,
           productId: productId,
@@ -32,10 +20,25 @@ const addReview = async (req, res) => {
           content: content,
         });
         await newReview.save();
-        return res.status(200).json({
+        res.status(201).json({
           status: true,
           message: "Review added successfully",
         });
+      } else {
+        if (review.userId.includes(userId)) {
+          res.json({
+            message: "You have already provided a review on this product",
+          });
+        } else {
+          review.userId.push(userId);
+          review.content.push(content);
+          review.rating.push(rating);
+          await review.save();
+          res.status(201).json({
+            status: true,
+            message: "Review added successfully",
+          });
+        }
       }
     }
   } catch (error) {
@@ -49,7 +52,7 @@ const addReview = async (req, res) => {
 const getReviewByProductId = async (req, res) => {
   try {
     const productId = req.body;
-    const review = await Review.findOne({ productId: productId });
+    const review = await Review.findOne(productId);
     if (!review) {
       res.status(404).json({
         status: false,
@@ -57,8 +60,7 @@ const getReviewByProductId = async (req, res) => {
       });
     }
     res.status(200).json({
-      status: true,
-      review: review.populate(),
+      review: review,
     });
   } catch (error) {
     res.status(500).json({ status: false, message: error.message });
@@ -68,30 +70,70 @@ const getReviewByProductId = async (req, res) => {
 const getReviewById = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken._id;
-    const review = await Review.findOne({ userId: userId });
+    const userId = decryptedToken.user._id;
+    const review = await Review.find({ userId: userId });
+    const tempReview = [];
+    if (review) {
+      for (let i = 0; i < review.length; i++) {
+        const index = review[i].userId.indexOf(userId);
+        let content = review[i].content[index];
+        let rating = review[i].rating[index];
+        let tempObj = { Content: content, Rating: rating };
+        tempReview.push(tempObj);
+      }
+      res.status(200).json({
+        status: true,
+        review: tempReview,
+      });
+    } else {
+      res.status(500).json({ status: false, message: "No review found" });
+    }
+  } catch (error) {
+    res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+const deleteReviewById = async (req, res) => {
+  try {
+    const decryptedToken = decryptToken(req.token);
+    const userId = decryptedToken.user._id;
+    const productId = req.body;
+    const review = await Review.findOne(productId);
     if (!review) {
       res.status(404).json({
         status: false,
         message: "No review exists",
       });
+    } else {
+        if (review.userId.includes(userId)) {
+          const index = review.userId.indexOf(userId);
+          // res.json(index);
+          await Review.findByIdAndUpdate("657842c3dd48767c95d59d5b", {
+            $pull: {
+              userId: { $postion: index},
+              content: { $postion: index },
+              rating: { $postion: index },
+            },
+          });
+          res.json({ message: "deleted" });
+        } else {
+          res.status(404).json({
+            message: "No review found",
+          });
+        }
     }
-    res.status(200).json({
-      wishList: wishList.populate(),
-    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, message: "Error fetching wishlists" });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
-
-// const deleteReviewById = async(req,res){
-
-// }
 
 // const updateReview = async(req,res){
 
 // }
 
-module.exports = { addReview, getReviewByProductId, getReviewById };
+module.exports = {
+  addReview,
+  getReviewByProductId,
+  getReviewById,
+  deleteReviewById,
+};

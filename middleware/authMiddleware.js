@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
       }
     });
   } else {
-    res.status(403).json("No auth header found");
+    res.status(404).json("No authorization header found");
   }
 };
 
@@ -35,9 +35,9 @@ const verifyAdmin = (req, res, next) => {
     if (isAdmin) {
       next();
     } else {
-      res.status(404).json({
+      res.status(401).json({
         status: false,
-        message: "You are not authorized",
+        message: "Unauthorized access",
       });
     }
   });
