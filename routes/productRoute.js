@@ -9,7 +9,7 @@ const {
 const { verifyAll, verifyAdmin } = require("../middleware/authMiddleware");
 
 productRouter.get("/getall", getProduct);
-productRouter.get("/getone", getProductById);
+productRouter.post("/getone", getProductById);
 productRouter.post("/add", verifyAll, addProduct);
 productRouter.put("/update", verifyAll, updateProductById);
 productRouter.delete("/delete", verifyAll, deleteProductById);

@@ -1,6 +1,7 @@
 const Product = require("../model/Product");
 const Review = require("../model/Review");
 const decryptToken = require("../helper/helper");
+const mongoose = require("mongoose");
 
 const addReview = async (req, res) => {
   try {
@@ -70,24 +71,35 @@ const getReviewByProductId = async (req, res) => {
 const getReviewById = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
-    const userId = decryptedToken.user._id;
-    const review = await Review.find({ userId: userId });
-    const tempReview = [];
-    if (review) {
-      for (let i = 0; i < review.length; i++) {
-        const index = review[i].userId.indexOf(userId);
-        let content = review[i].content[index];
-        let rating = review[i].rating[index];
-        let tempObj = { Content: content, Rating: rating };
-        tempReview.push(tempObj);
-      }
-      res.status(200).json({
-        status: true,
-        review: tempReview,
-      });
-    } else {
-      res.status(500).json({ status: false, message: "No review found" });
-    }
+    // const userId = decryptedToken.user._id;
+    const userId = new mongoose.Types.ObjectId(decryptedToken.user._id);
+    const review = await Review.aggregate([
+      {
+        $match: { userId: userId },
+      },
+      {$group:{userId: $rating}}
+    ]);
+    res.json({ message: "Hoilo na", review });
+
+    // const decryptedToken = decryptToken(req.token);
+    // const userId = decryptedToken.user._id;
+    // const review = await Review.find({ userId: userId });
+    // const tempReview = [];
+    // if (review) {
+    //   for (let i = 0; i < review.length; i++) {
+    //     const index = review[i].userId.indexOf(userId);
+    //     let content = review[i].content[index];
+    //     let rating = review[i].rating[index];
+    //     let tempObj = { Content: content, Rating: rating };
+    //     tempReview.push(tempObj);
+    //   }
+    //   res.status(200).json({
+    //     status: true,
+    //     review: tempReview,
+    //   });
+    // } else {
+    //   res.status(500).json({ status: false, message: "No review found" });
+    // }
   } catch (error) {
     res.status(500).json({ status: false, message: error.message });
   }
@@ -105,22 +117,22 @@ const deleteReviewById = async (req, res) => {
         message: "No review exists",
       });
     } else {
-        if (review.userId.includes(userId)) {
-          const index = review.userId.indexOf(userId);
-          // res.json(index);
-          await Review.findByIdAndUpdate("657842c3dd48767c95d59d5b", {
-            $pull: {
-              userId: { $postion: index},
-              content: { $postion: index },
-              rating: { $postion: index },
-            },
-          });
-          res.json({ message: "deleted" });
-        } else {
-          res.status(404).json({
-            message: "No review found",
-          });
-        }
+      if (review.userId.includes(userId)) {
+        const index = review.userId.indexOf(userId);
+        // res.json(index);
+        await Review.findByIdAndUpdate("657842c3dd48767c95d59d5b", {
+          $pull: {
+            userId: { $postion: index },
+            content: { $postion: index },
+            rating: { $postion: index },
+          },
+        });
+        res.json({ message: "deleted" });
+      } else {
+        res.status(404).json({
+          message: "No review found",
+        });
+      }
     }
   } catch (error) {
     res.status(500).json({ status: false, message: error.message });

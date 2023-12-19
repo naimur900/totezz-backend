@@ -62,6 +62,8 @@ const signinUser = async (req, res) => {
         res.status(200).json({
           status: true,
           message: "User signed in",
+          firstName: user.firstName,
+          lastName: user.lastName,
           token: token,
         });
       } else {
