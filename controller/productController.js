@@ -1,6 +1,6 @@
 const Product = require("../model/Product");
 
-const addProduct = async (req, res) => {
+const add = async (req, res) => {
   try {
     const product = req.body;
     const newProduct = new Product(product);
@@ -17,54 +17,55 @@ const addProduct = async (req, res) => {
   }
 };
 
-const getProduct = async (req, res) => {
+const getAll = async (req, res) => {
   try {
     const products = await Product.find();
     if (!products) {
-      res.status(404).json({ status: false, message: "There is no product" });
-    } else {
-      res.status(200).json(products);
+      return res
+        .status(404)
+        .json({ status: false, message: "No item available" });
     }
+    return res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ status: false, error: error.message });
   }
 };
 
-const getProductById = async (req, res) => {
+const getOne = async (req, res) => {
   try {
-    const { productId } = req.body;
+    const { productId } = req.params;
     const product = await Product.findById(productId);
     if (!product) {
-      res.status(404).json({ status: false, message: "No such product found" });
-    } else {
-      res.status(200).json(product);
+      return res
+        .status(404)
+        .json({ status: false, message: "No such product found" });
     }
+    return res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ status: false, error: error.message });
   }
 };
 
-const updateProductById = async (req, res) => {
+const update = async (req, res) => {
   try {
     const { productId, updatedProperties } = req.body;
     const product = await Product.findById(productId);
     if (!product) {
-      res.status(404).json({
+      return res.status(404).json({
         status: false,
-        message: "No such product is found",
-      });
-    } else {
-      const updatedProduct = await Product.findByIdAndUpdate(
-        productId,
-        { $set: updatedProperties },
-        { new: true, runValidators: true }
-      );
-      res.status(200).json({
-        status: true,
-        message: "Item updated successfully",
-        updatedProduct: updatedProduct,
+        message: "No such product found",
       });
     }
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { $set: updatedProperties },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      status: true,
+      message: "Item updated successfully",
+      updatedProduct: updatedProduct,
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
@@ -73,24 +74,23 @@ const updateProductById = async (req, res) => {
   }
 };
 
-const deleteProductById = async (req, res) => {
+const remove = async (req, res) => {
   try {
     const { productId } = req.body;
     const product = await Product.findById(productId);
     if (!product) {
-      res.status(404).json({
+      return res.status(404).json({
         status: false,
         message: "No such product is found",
       });
-    } else {
-      await Product.findByIdAndDelete(productId);
-      res.status(200).json({
-        status: true,
-        message: "Product is deleted successfully",
-      });
     }
+    await Product.findByIdAndDelete(productId);
+    res.status(200).json({
+      status: true,
+      message: "Product is deleted successfully",
+    });
   } catch (error) {
-    res.status(300).json({
+    res.status(500).json({
       status: false,
       message: error.message,
     });
@@ -98,9 +98,9 @@ const deleteProductById = async (req, res) => {
 };
 
 module.exports = {
-  addProduct,
-  getProductById,
-  getProduct,
-  updateProductById,
-  deleteProductById,
+  add,
+  getAll,
+  getOne,
+  update,
+  remove,
 };
