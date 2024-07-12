@@ -11,8 +11,9 @@ const productSchema = new mongoose.Schema({
     ],
   },
   stock: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "WishList" }]
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

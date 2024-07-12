@@ -2,34 +2,29 @@ const WishList = require("../model/WishList");
 const decryptToken = require("../helper/helper");
 const Product = require("../model/Product");
 
-const addToWishList = async (req, res) => {
+const add = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
     const userId = decryptedToken.user._id;
     const { productId } = req.body;
-    const product = await Product.findById(productId);
+    const product = await WishList.findById(productId);
     if (!product) {
-      return res.status(404).json({ message: "No such product is found" });
+      return res.status(404).json({ message: "No such product found" });
     }
-    const wishList = await WishList.findOne({ userId: userId });
-    if (!wishList) {
-      const newWishList = new WishList({
-        userId: userId,
-        productIds: [productId],
-      });
-      await newWishList.save();
-      res.status(201).json({ message: "Product added to wishlist" });
+    const wish = await WishList.findOne({ product: productId, user: userId });
+    if (wish) {
+      return res
+        .status(400)
+        .json({ message: "Product already exists in wishlist" });
     }
-
-    if (wishList.productIds.includes(productId)) {
-      res.status(400).json({ message: "Product already exists in wishlist" });
-    }
-
-    wishList.productIds.push(productId);
-    await wishList.save();
+    const newWishList = new WishList({
+      user: userId,
+      product: productId,
+    });
+    await newWishList.save();
     res
-      .status(200)
-      .json({ message: "Product added to the wishlist successfully" });
+      .status(201)
+      .json({ status: true, message: "Successfully added to wishlist" });
   } catch (error) {
     res.status(300).json({
       status: false,
@@ -38,23 +33,23 @@ const addToWishList = async (req, res) => {
   }
 };
 
-const getWishListById = async (req, res) => {
+const get = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
     const userId = decryptedToken.user._id;
-    const wishList = await WishList.findOne({ userId: userId }).populate(
-      "productIds"
+    const wish = await WishList.find({ user: userId }).populate(
+      "product",
+      "name images"
     );
-    // .exec();
-    if (!wishList) {
-      res.status(404).json({
+    if (!wish) {
+      return res.status(404).json({
+        status: false,
         message: "No such wishlist exists",
       });
-    } else {
-      res.status(200).json({
-        wishList: wishList,
-      });
     }
+    return res.status(200).json({
+      wishList: wish,
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
@@ -63,7 +58,7 @@ const getWishListById = async (req, res) => {
   }
 };
 
-const removeFromWishList = async (req, res) => {
+const remove = async (req, res) => {
   try {
     const { productId } = req.body;
     const decryptedToken = decryptToken(req.token);
@@ -88,4 +83,4 @@ const removeFromWishList = async (req, res) => {
   }
 };
 
-module.exports = { addToWishList, getWishListById, removeFromWishList };
+module.exports = { add, get, remove };

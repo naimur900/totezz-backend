@@ -1,60 +1,57 @@
 const User = require("../model/User");
 const decryptToken = require("../helper/helper");
 
-const getUser = async (req, res) => {
+const getAll = async (req, res) => {
   try {
     const users = await User.find();
     if (!users) {
-      res.status(404).json({ status: false, message: "User is not found" });
-    } else {
-      res.status(200).json(Users);
+      return res.status(404).json({ status: false, message: "User not found" });
     }
+    return res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ status: false, error: error.message });
   }
 };
 
-const getUserById = async (req, res) => {
+const getOne = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
     const userId = decryptedToken.user._id;
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ status: false, message: "User is not found" });
-    } else {
-      res.status(200).json(user);
+      return res.status(404).json({ status: false, message: "User not found" });
     }
+    return res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ status: false, error: error.message });
   }
 };
 
-const updateUserById = async (req, res) => {
+const update = async (req, res) => {
   try {
     const decryptedToken = decryptToken(req.token);
     const userId = decryptedToken.user._id;
     const updatedProperties = { ...req.body, password: undefined };
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({
+      return res.status(404).json({
         status: flase,
         message: "User is not found",
       });
-    } else {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $set: updatedProperties },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-      res.status(201).json({
-        status: true,
-        message: "User updated successfully",
-        updatedUser: updatedUser,
-      });
     }
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updatedProperties },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    return res.status(201).json({
+      status: true,
+      message: "User updated successfully",
+      updatedUser: updatedUser,
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
@@ -63,24 +60,22 @@ const updateUserById = async (req, res) => {
   }
 };
 
-const deleteUserById = async (req, res) => {
+const remove = async (req, res) => {
   try {
-    // const decryptedToken = decryptToken(req.token);
-    // const userId = decryptedToken.user._id;
-    const {userId} = req.body;
+    const decryptedToken = decryptToken(req.token);
+    const userId = decryptedToken.user._id;
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({
+      return res.status(404).json({
         status: false,
         message: "User is not found",
       });
-    } else {
-      await User.findByIdAndDelete(userId);
-      res.status(200).json({
-        status: true,
-        message: "User is deleted successfully",
-      });
     }
+    await User.findByIdAndDelete(userId);
+    return res.status(200).json({
+      status: true,
+      message: "User is deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
@@ -89,4 +84,4 @@ const deleteUserById = async (req, res) => {
   }
 };
 
-module.exports = { getUser, getUserById, updateUserById, deleteUserById };
+module.exports = { getAll, getOne, update, remove };

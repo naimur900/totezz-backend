@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const CryptoJS = require("crypto-js");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 const User = require("../model/User");
 
 const signupUser = async (req, res) => {
@@ -17,21 +18,19 @@ const signupUser = async (req, res) => {
       });
     }
 
-    const newUser = new User({
-      email,
-      password: CryptoJS.AES.encrypt(
-        password,
-        process.env.CRYPTO_SECRET
-      ).toString(),
-      firstName,
-      lastName,
-      contactNumber,
-    });
-
-    await newUser.save();
-    res.status(201).json({
-      status: true,
-      message: "User created successfully",
+    bcrypt.hash(password, saltRounds).then(async (hash) => {
+      const newUser = new User({
+        email,
+        password: hash,
+        firstName,
+        lastName,
+        contactNumber,
+      });
+      await newUser.save();
+      return res.status(201).json({
+        status: true,
+        message: "User created successfully",
+      });
     });
   } catch (error) {
     res.status(500).json({
@@ -55,30 +54,27 @@ const signinUser = async (req, res) => {
       });
     }
 
-    const decryptedPass = CryptoJS.AES.decrypt(
-      user.password,
-      process.env.CRYPTO_SECRET
-    ).toString(CryptoJS.enc.Utf8);
-
-    if (password === decryptedPass) {
-      const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-        expiresIn: "2h",
-      });
-      return res.status(200).json({
-        status: true,
-        message: "User signed in",
-        firstName: user.firstName,
-        lastName: user.lastName,
-        token: token,
-      });
-    } else {
-      return res.status(401).json({
-        status: false,
-        message: "Wrong password",
-      });
-    }
+    bcrypt.compare(password, user.password).then((result) => {
+      if (result) {
+        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+          expiresIn: "2h",
+        });
+        return res.status(200).json({
+          status: true,
+          message: "User signed in",
+          firstName: user.firstName,
+          lastName: user.lastName,
+          token: token,
+        });
+      } else {
+        return res.status(401).json({
+          status: false,
+          message: "Wrong password",
+        });
+      }
+    });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       status: false,
       message: error.message,
     });
