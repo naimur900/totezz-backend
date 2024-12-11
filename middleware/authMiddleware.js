@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-
+    console.log(token);
     jwt.verify(token, process.env.JWT_SECRET, function (error, user) {
       if (error) {
         res.status(403).json({
@@ -13,8 +13,9 @@ const verifyToken = (req, res, next) => {
           message: error.message,
         });
       } else {
+        // console.log("Decoded User:", user); 
         req.user = user;
-        req.token = token
+        req.token = token;
         next();
       }
     });
@@ -31,7 +32,7 @@ const verifyAll = (req, res, next) => {
 
 const verifyAdmin = (req, res, next) => {
   verifyToken(req, res, () => {
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user?.user?.isAdmin;
     if (isAdmin) {
       next();
     } else {

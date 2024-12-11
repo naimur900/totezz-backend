@@ -11,12 +11,12 @@ const createPayment = async (req, res) => {
   try {
     const { amount, payerReference, callbackURL } = req.body;
     const token = await getToken();
-    console.log(token);
+    // console.log(token);
 
     const payload = {
       mode: "0011",
       payerReference: payerReference ?? "01619777282",
-      callbackURL: callbackURL ?? "http://localhost:3000",
+      callbackURL: callbackURL ?? "http://localhost:3000/payment",
       amount: amount,
       currency: "BDT",
       intent: "sale",

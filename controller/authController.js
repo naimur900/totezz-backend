@@ -26,6 +26,7 @@ const signupUser = async (req, res) => {
         lastName,
         contactNumber,
       });
+
       await newUser.save();
       return res.status(201).json({
         status: true,
@@ -42,6 +43,8 @@ const signupUser = async (req, res) => {
 
 const signinUser = async (req, res) => {
   const { email, password } = req.body;
+  // console.log(email,password);
+  
   try {
     const user = await User.findOne({
       email: email,
@@ -56,6 +59,8 @@ const signinUser = async (req, res) => {
 
     bcrypt.compare(password, user.password).then((result) => {
       if (result) {
+        // console.log(user);
+        
         const token = jwt.sign({ user }, process.env.JWT_SECRET, {
           expiresIn: "2h",
         });
@@ -65,6 +70,7 @@ const signinUser = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           token: token,
+          isAdmin: user.isAdmin
         });
       } else {
         return res.status(401).json({
